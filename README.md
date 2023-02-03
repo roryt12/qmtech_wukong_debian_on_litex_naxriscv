@@ -178,7 +178,7 @@ After all, this is a very low resources board and it is SLOW!
 	{
         "Image"                  :       "0x41000000",
         "qmtech_wukong.dtb"      :       "0x46000000",
-        "initrd.img-6.2.0-rc5"   :       "0x42000000",
+        "initrd.img"   		 :       "0x42000000",
         "opensbi.bin"            :       "0x40f00000"
 	}
 
