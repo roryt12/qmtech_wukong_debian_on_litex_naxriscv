@@ -102,7 +102,7 @@ Finally compile your DTB:
 		cp -avf vexriscv naxriscv_64
 		cd naxriscv_64
 ```		
-Edit the files in this directory according to the opensbi.zip
+Edit the files in this directory according to the opensbi.tgz
 ```		
 		cd ../..
 		make PLATFORM=litex/naxriscv_64 CROSS_COMPILE=riscv64-unknown-linux-gnu- -j$(nproc)
