@@ -39,7 +39,7 @@ Also note that you can use 3MBps on the uart for this board (litex_term or putty
 
 A) Manually. Use Charles' DTS from https://spinalhdl.github.io/NaxRiscv-Rtd/main/NaxRiscv/hardware/index.html           
 Confirm your board's settings by looking inside the three produced files : csv, json and log. 
-Especially the memory,the devices and the interrupts. Change accordingly.
+Especially  memory, devices and interrupts. Change accordingly.
 
 or 
 		
@@ -68,7 +68,7 @@ B) With litex_json2dts_linux:
       linux,initrd-end   = <0x43000000>;
 ```	
 
-The reason for sbi/hvc0 (after Charles' suggestion) is that liteuart give me a lot of headaches, but with the hvc driver works.
+The reason for sbi/hvc0 (after Charles' suggestion) is that liteuart gives me a lot of headaches, but the hvc driver works.
 
 Also these
 ```
@@ -96,12 +96,12 @@ Finally compile your DTB:
 		cp -avf vexriscv naxriscv_64
 		cd naxriscv_64
 ```		
-Edit the files in this directory according to the opensbi.tgz
+Edit the files in this directory, or use mine from opensbi.tgz
 ```		
 		cd ../..
 		make PLATFORM=litex/naxriscv_64 CROSS_COMPILE=riscv64-unknown-linux-gnu- -j$(nproc)
 ```		
-Your opensbi.bin should be now in  build/platform/litex/naxriscv_64/firmware/fw_jump.bin 
+Your opensbi.bin is build/platform/litex/naxriscv_64/firmware/fw_jump.bin 
 		
 		
 7) Compile Linux kernel :
@@ -140,12 +140,12 @@ Your kernel Image will be in 	arch/riscv/boot/Image
 ```
 
 and run after the steps in "Preparing the chroot for use in a virtual machine". The steps for u-boot are not really needed (for the moment at least). I modified a few other things in the chroot environment, 
-eg  installed udev, locales / timezone and a few others. The usual things needed to be edited, eg hostname, hosts, network/interfaces, fstab etc. 
+eg  installed udev, locales / timezone and a few others. The usual things needed to be edited, eg hostname, hosts, network/interfaces, fstab etc. BEWARE with fstab, certainly you will have to adjust based on the UIDS  that your sdcard has.
+
 In systemd's journald.conf, I used:
 ```
 	Storage=none
 ```
-
 and in logind.conf:
 ```
 	NAutoVTs=0
@@ -179,7 +179,7 @@ After all, this is a very low resources board and it is SLOW!
 ```
 
 11) Prepared a switable sdcard with three partitions: 1st is VFAT that contains the above boot.json and all the other files used by it. 2nd partition is a swap. 3rd partition is ext4 and should contain a copy of the chroot riscv Debian filesystem.
-Ensure that fstab of it is correct accordingly.
+Ensure that fstab is correct accordingly to the card ! 
 
 
 Put the card in the board, program the bitstream with Vivado, and you are ready to boot to Debian !
@@ -188,6 +188,9 @@ Put the card in the board, program the bitstream with Vivado, and you are ready 
 Note: I found that a small heatsink improves FPG'a stability. Also placing the board inside the computer room (18 Celsious) helped a lot ;)
 
 2023-03-03: I have issues with the ethernet. Although the system initializes it and there are leds flashing and IP address and interrupts, I can not ping the external world. This is happening also with Litex/Rocket. In the past I had Rocket running with network without a problem. Not sure where is the issue, maybe a change in liteeth or maybe the ethernet on my board has became defected (I have checked cables, switches etc).
+
+![Screenshot](NaxRiscv.jpg)
+
 
 ![Screenshot](NaxRiscv1.jpg)
 
