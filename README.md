@@ -61,7 +61,7 @@ B) With litex_json2dts_linux:
 
     litex_json2dts_linux --root-device mmcblk0p3 qmtech_wukong.json > qmtech_wukong.dts
 		
-5) Edit your DTS. I used : 
+5) Edit your DTS (I have uploaded mine to compare). I used : 
 ```	
       bootargs = "console=hvc0  earlycon=sbi swiotlb=noforce root=/dev/mmcblk0p3 rw rootwait ";
       linux,initrd-start = <0x42000000>;
@@ -69,7 +69,6 @@ B) With litex_json2dts_linux:
 ```	
 
 The reason for sbi/hvc0 (after Charles' suggestion) is that liteuart give me a lot of headaches, but with the hvc driver works.
-I have uploaded mine to compare.
 
 Also these
 ```
