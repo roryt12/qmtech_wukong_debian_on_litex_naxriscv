@@ -69,6 +69,7 @@ B) With litex_json2dts_linux:
 ```	
 
 The reason for sbi/hvc0 (after Charles' suggestion) is that liteuart give me a lot of headaches, but with the hvc driver works.
+I have uploaded mine to compare.
 
 Also these
 ```
