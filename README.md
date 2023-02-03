@@ -22,11 +22,11 @@ DO NOT SKIP this step if you do not have an already proved toolchain, especially
 3) I run the following to build a FPGA Bitstream: 
 
 ```	
-	litex-boards/litex_boards/targets/qmtech_wukong.py --build  --with-sdcard  --with-ethernet \
-    --with-video-terminal --cpu-type naxriscv  --sys-clk-freq 100e6 --board-version 2  \
-    --csr-csv  qmtech_wukong.csv  --csr-json qmtech_wukong.json \
-			--l2-size 0  -xlen 64 --scala-args 'rvc=true,rvf=true,rvd=true,mmu=true' \
-      --uart-baudrate 3000000    > qmtech_wukong.log 2>&1 &
+   litex-boards/litex_boards/targets/qmtech_wukong.py --build  --with-sdcard  --with-ethernet \
+	--with-video-terminal --cpu-type naxriscv  --sys-clk-freq 100e6 --board-version 2  \
+	--csr-csv  qmtech_wukong.csv  --csr-json qmtech_wukong.json \
+	--l2-size 0  -xlen 64 --scala-args 'rvc=true,rvf=true,rvd=true,mmu=true' \
+	--uart-baudrate 3000000    > qmtech_wukong.log 2>&1 &
 
 ```	
 
@@ -37,15 +37,9 @@ Also note that you can use 3MBps on the uart for this board (litex_term or putty
 
 4) There are two ways to build your DTS/DTB: 
 
-A) Manually 
-		
-Use Charles' DTS from 
-
-      https://spinalhdl.github.io/NaxRiscv-Rtd/main/NaxRiscv/hardware/index.html 
-      https://drive.google.com/drive/folders/1OWY_NtJYWXd3oT8A3Zujef4eJwZFP_Yh?usp=sharing 
-      
+A) Manually. Use Charles' DTS from https://spinalhdl.github.io/NaxRiscv-Rtd/main/NaxRiscv/hardware/index.html           
 Confirm your board's settings by looking inside the three produced files : csv, json and log. 
-Especially the memory you have, the devices and the interrupts. Change accordingly
+Especially the memory,the devices and the interrupts. Change accordingly.
 
 or 
 		
