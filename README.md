@@ -189,5 +189,5 @@ Note: I found that a small heatsink improves FPG'a stability. Also placing the b
 
 2023-03-03: I have issues with the ethernet. Although the system initializes it and there are leds flashing and IP address and interrupts, I can not ping the external world. This is happening also with Litex/Rocket. In the past I had Rocket running with network without a problem. Not sure where is the issue, maybe a change in liteeth or maybe the ethernet on my board has became defected (I have checked cables, switches etc).
 
-![Screenshot](NaxRiscv-axi.jpg)
+![Screenshot](NaxRiscv1.jpg)
 
