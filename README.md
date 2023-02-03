@@ -191,6 +191,5 @@ Note: I found that a small heatsink improves FPG'a stability. Also placing the b
 
 ![Screenshot](NaxRiscv.jpg)
 
-
 ![Screenshot](NaxRiscv1.jpg)
 
