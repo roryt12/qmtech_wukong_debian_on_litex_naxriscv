@@ -1,2 +1,199 @@
 # qmtech_wukong_debian_on_litex_naxriscv
 Running RISCV64 Debian on Litex/NaxRiscv with a qmtech wukong FPGA 
+
+Inspired from https://spinalhdl.github.io/NaxRiscv-Rtd/main/index.html, with a lot of advices (and many thanks) from Charles Papon.
+
+I managed to run a stable RISCV64 Debian with Qmtech's Wukong board (version 2), with xc7a100t, and Litex/NaxRiscv.
+
+As a development environment I used Debian 11 "bullseye" with backports. The steps I followed are (beware, YMMV) :
+
+1) I Installed Litex https://github.com/enjoy-digital/litex as usual.
+2) I used my proved  GCC cross-compiler toolchain for 64-bit RISC-V, the steps are from Litex/Rocket's Readme:
+
+```
+	git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
+	pushd riscv-gnu-toolchain
+	./configure --prefix=$HOME/RISCV --enable-multilib
+	make newlib linux
+	popd
+```	
+DO NOT SKIP this step if you do not have an already proved toolchain, especially for OpenSBI. It may takes some time to build it but you will not regret it ! Put the toolchain in your $PATH and confirm that eg riscv64-unknown-linux-gnu-gcc runs
+
+3) I run the following to build a FPGA Bitstream: 
+
+```	
+	litex-boards/litex_boards/targets/qmtech_wukong.py --build  --with-sdcard  --with-ethernet \
+    --with-video-terminal --cpu-type naxriscv  --sys-clk-freq 100e6 --board-version 2  \
+    --csr-csv  qmtech_wukong.csv  --csr-json qmtech_wukong.json \
+			--l2-size 0  -xlen 64 --scala-args 'rvc=true,rvf=true,rvd=true,mmu=true' \
+      --uart-baudrate 3000000    > qmtech_wukong.log 2>&1 &
+
+```	
+
+Note the three generated files: .csv , .json and .log, will be used in the next step. 
+Also note that you can use 3MBps on the uart for this board (litex_term or putty).
+
+
+
+4) There are two ways to build your DTS/DTB: 
+
+A) Manually 
+		
+Use Charles' DTS from 
+
+      https://spinalhdl.github.io/NaxRiscv-Rtd/main/NaxRiscv/hardware/index.html 
+      https://drive.google.com/drive/folders/1OWY_NtJYWXd3oT8A3Zujef4eJwZFP_Yh?usp=sharing 
+      
+Confirm your board's settings by looking inside the three produced files : csv, json and log. 
+Especially the memory you have, the devices and the interrupts. Change accordingly
+
+or 
+		
+B) With litex_json2dts_linux:
+		
+  a) edit litex/litex/tools/litex_json2dts_linux.py, search for 
+		
+    "cpu_architectures =" 
+					
+      and add 
+						
+    "naxriscv"           : "riscv",
+    
+  b) edit your qmtech_wukong-n.json, search for "constants" and add 
+
+    "config_cpu_count": 1,
+				
+  c) run :
+
+    litex_json2dts_linux --root-device mmcblk0p3 qmtech_wukong.json > qmtech_wukong.dts
+		
+5) Edit your DTS. I used : 
+```	
+      bootargs = "console=hvc0  earlycon=sbi swiotlb=noforce root=/dev/mmcblk0p3 rw rootwait ";
+      linux,initrd-start = <0x42000000>;
+      linux,initrd-end   = <0x43000000>;
+```	
+
+The reason for sbi/hvc0 (after Charles' suggestion) is that liteuart give me a lot of headaches, but with the hvc driver works.
+
+Also these
+```
+  riscv,isa = "rv64imafdc";
+  mmu-type = "riscv,sv39";
+
+In memory I changed 
+
+  reg = <0x41000000 0xF000000>;
+
+and didn't used the reserved-memory block.
+```		
+Finally compile your DTB:
+
+```		
+	dtc -O dtb -o qmtech_wukong.dtb qmtech_wukong.dts
+```	
+6) Compile opensbi: 
+
+```
+		git clone https://github.com/litex-hub/opensbi
+		cd opensbi
+		git checkout 0.8-linux-on-litex-vexriscv
+		cd platform/litex
+		cp -avf vexriscv naxriscv_64
+		cd naxriscv_64
+```		
+Edit the files in this directory according to the opensbi.zip
+```		
+		cd ../..
+		make PLATFORM=litex/naxriscv_64 CROSS_COMPILE=riscv64-unknown-linux-gnu- -j$(nproc)
+```		
+Your opensbi.bin should be now in  build/platform/litex/naxriscv_64/firmware/fw_jump.bin 
+		
+		
+7) Compile Linux kernel :
+
+```
+	git clone https://github.com/litex-hub/linux.git
+	cd linux
+	git checkout litex-rebase
+	make ARCH=riscv CROSS_COMPILE=riscv64-unknown-linux-gnu- litex_rocket_defconfig 
+	
+```	
+
+You should edit .config to add a few things, eg
+	
+```
+	CONFIG_RISCV_SBI=y
+	CONFIG_RISCV_SBI_V01=y
+	CONFIG_SERIAL_EARLYCON_RISCV_SBI=y
+	CONFIG_HVC_RISCV_SBI=y
+```
+To be sure, use my .config. Then run:
+	
+```	
+	make ARCH=riscv CROSS_COMPILE=riscv64-unknown-linux-gnu- -j$(nproc)
+
+```
+
+Your kernel Image will be in 	arch/riscv/boot/Image
+	
+	
+8)  My target is to boot from an sdcard a full Debian environment. I created a chroot Debian environment with the instructions from https://wiki.debian.org/RISC-V, step 6, "Creating a riscv64 chroot", with debootstrap. 
+```
+	sudo apt-get install debootstrap qemu-user-static binfmt-support debian-ports-archive-keyring
+	sudo debootstrap --arch=riscv64 --keyring /usr/share/keyrings/debian-ports-archive-keyring.gpg \
+      --include=debian-ports-archive-keyring unstable /tmp/riscv64-chroot http://deb.debian.org/debian-ports
+```
+
+and run after the steps in "Preparing the chroot for use in a virtual machine". The steps for u-boot are not really needed (for the moment at least). I modified a few other things in the chroot environment, 
+eg  installed udev, locales / timezone and a few others. The usual things needed to be edited, eg hostname, hosts, network/interfaces, fstab etc. 
+In systemd's journald.conf, I used:
+```
+	Storage=none
+```
+
+and in logind.conf:
+```
+	NAutoVTs=0
+	ReserveVT=0
+```
+
+and in /etc/login.defs :
+```
+	LOGIN_TIMEOUT           180
+```
+
+After all, this is a very low resources board and it is SLOW!    
+
+
+9)  I used a Debian style initrd. Initrd is a usefull to initialize devices during boot, fsck the filesystems etc. 	In order to make one, I used a trick: 
+	I put my linux source tree inside /usr/src/ of my riscv Debian filesystem, used chroot on the root of the filsystem, recompiled the kernel natively with Debian's gcc (needed because some scripts need to be natively recompiled), 
+	and	then run make modules, make modules_install and make install - ie I installed it inside my riscv filesystem. Debian's scripts made the initrd for me. Lazy, I know, if you know mkinitrd feel free to use it instead.
+	If unsure how to do any of these, use mine.
+
+
+10) Created a boot.json that contains :
+
+```
+	{
+        "Image"                  :       "0x41000000",
+        "qmtech_wukong.dtb"      :       "0x46000000",
+        "initrd.img-6.2.0-rc5"   :       "0x42000000",
+        "opensbi.bin"            :       "0x40f00000"
+	}
+
+```
+
+11) Prepared a switable sdcard with three partitions: 1st is VFAT that contains the above boot.json and all the other files used by it. 2nd partition is a swap. 3rd partition is ext4 and should contain a copy of the chroot riscv Debian filesystem.
+Ensure that fstab of it is correct accordingly.
+
+
+Put the card in the board, program the bitstream with Vivado, and you are ready to boot to Debian !
+
+
+Note: I found that a small heatsink improves FPG'a stability. Also placing the board inside the computer room (18 Celsious) helped a lot ;)
+
+2023-03-03: I have issues with the ethernet. Although the system initializes it and there are leds flashing and IP address and interrupts, I can not ping the external world. This is happening also with Litex/Rocket. In the past I had Rocket running with network without a problem. Not sure where is the issue, maybe a change in liteeth or maybe the ethernet on my board has became defected (I have checked cables, switches etc).
+
+![Screenshot](NaxRiscv-axi.jpg)
+
