@@ -25,7 +25,7 @@ DO NOT SKIP this step if you do not have an already proved toolchain, especially
    litex-boards/litex_boards/targets/qmtech_wukong.py --build  --with-sdcard  --with-ethernet \
 	--with-video-terminal --cpu-type naxriscv  --sys-clk-freq 100e6 --board-version 2  \
 	--csr-csv  qmtech_wukong.csv  --csr-json qmtech_wukong.json \
-	--l2-size 0  -xlen 64 --scala-args 'rvc=true,rvf=true,rvd=true,mmu=true' \
+	--l2-size 0  --xlen 64 --scala-args 'rvc=true,rvf=true,rvd=true,mmu=true' \
 	--uart-baudrate 3000000    > qmtech_wukong.log 2>&1 &
 
 ```	
