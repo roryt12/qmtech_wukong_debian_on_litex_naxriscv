@@ -187,7 +187,7 @@ Put the card in the board, program the bitstream with Vivado, and you are ready 
 
 Note: I found that a small heatsink improves FPG'a stability. Also placing the board inside the computer room (18 Celsious) helped a lot ;)
 
-2023-02-08: I have some issues with the ethernet. Sometimes it seems to be ok, the system has initialized it and there are leds flashing and IP address and interrupt is correct, no errors,dropped, overruns or collisions are reported, but either I can not ping the external world, or I can ping but can't really pass traffic over it. This is happening also with Litex/Rocket. In the past I had Rocket running with network without a problem. Not sure where is the issue, maybe a change in liteeth, some trouble with board interrupts, or maybe the ethernet on my board has became defected (I have checked cables, switches etc). 
+2023-02-08: I have some issues with the ethernet. Sometimes it seems to be ok, the system has initialized it and there are leds flashing and IP address and interrupt is correct, no errors, a lot of dropped, and either I can not ping the external world, or I can ping but can't really pass traffic over it. This is happening also with Litex/Rocket. In the past I had Rocket running with network without a problem. Not sure where is the issue, maybe a change in liteeth, some trouble with board interrupts, or maybe the ethernet on my board has became defected (I have checked cables, switches etc). 
 
 ![Screenshot](NaxRiscv.jpg)
 
