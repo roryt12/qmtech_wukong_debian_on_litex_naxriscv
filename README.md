@@ -17,7 +17,7 @@ As a development environment I used Debian 11 "bullseye" with backports. The ste
 	make newlib linux
 	popd
 ```	
-DO NOT SKIP this step if you do not have an already proved toolchain, especially for OpenSBI. It may takes some time to build it but you will not regret it ! Put the toolchain in your $PATH and confirm that eg riscv64-unknown-linux-gnu-gcc runs
+DO NOT SKIP this step if you do not have an already proved toolchain, especially for OpenSBI. It may take some time to build, but you will not regret it ! Put the toolchain in your $PATH and confirm that eg riscv64-unknown-linux-gnu-gcc runs
 
 3) I run the following to build a FPGA Bitstream: 
 
@@ -53,7 +53,7 @@ B) With litex_json2dts_linux:
 						
     "naxriscv"           : "riscv",
     
-  b) edit your qmtech_wukong-n.json, search for "constants" and add 
+  b) edit your qmtech_wukong.json, search for "constants" and add 
 
     "config_cpu_count": 1,
 				
