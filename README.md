@@ -17,7 +17,7 @@ As a development environment I used Debian 11 "bullseye" with backports. The ste
 	make newlib linux
 	popd
 ```	
-DO NOT SKIP this step if you do not have an already proved toolchain, especially for OpenSBI. It may take some time to build, but you will not regret it ! Put the toolchain in your $PATH and confirm that eg riscv64-unknown-linux-gnu-gcc runs
+**DO NOT SKIP** this step if you do not have an ***already proved toolchain***, especially for OpenSBI. It may take some time to build, but you will not regret it ! Put the toolchain in your $PATH and confirm that eg riscv64-unknown-linux-gnu-gcc runs ok. *2023-02-10 Recently I found that I can also use Debian's toolchain from riscv-sid , at least from the kernel and then - not tested yet for opensbi and/or litex.*
 
 3) I run the following to build a FPGA Bitstream: 
 
@@ -35,29 +35,7 @@ Also note that you can use 3MBps on the uart for this board (litex_term or putty
 
 
 
-4) There are two ways to build your DTS/DTB: 
-
-A) Manually. Use Charles' DTS from https://spinalhdl.github.io/NaxRiscv-Rtd/main/NaxRiscv/hardware/index.html           
-Confirm your board's settings by looking inside the three produced files : csv, json and log. 
-Especially  memory, devices and interrupts. Change accordingly.
-
-or 
-		
-B) With litex_json2dts_linux:
-		
-  a) edit litex/litex/tools/litex_json2dts_linux.py, search for 
-		
-    "cpu_architectures =" 
-					
-      and add 
-						
-    "naxriscv"           : "riscv",
-    
-  b) edit your qmtech_wukong.json, search for "constants" and add 
-
-    "config_cpu_count": 1,
-				
-  c) run :
+4) With the recent commits it is very easy to create the DTS file, just run :
 
     litex_json2dts_linux --root-device mmcblk0p3 qmtech_wukong.json > qmtech_wukong.dts
 		
@@ -73,7 +51,6 @@ The reason for sbi/hvc0 (after Charles' suggestion) is that liteuart gives me a 
 Also these
 ```
   riscv,isa = "rv64imafdc";
-  mmu-type = "riscv,sv39";
 
 In memory I changed 
 
@@ -86,7 +63,7 @@ Finally compile your DTB:
 ```		
 	dtc -O dtb -o qmtech_wukong.dtb qmtech_wukong.dts
 ```	
-6) Compile opensbi: 
+6) Compile opensbi (I used the one from litex, feel free to use any clone that suits you) : 
 
 ```
 		git clone https://github.com/litex-hub/opensbi
@@ -122,7 +99,7 @@ You should edit .config to add a few things, eg
 	CONFIG_SERIAL_EARLYCON_RISCV_SBI=y
 	CONFIG_HVC_RISCV_SBI=y
 ```
-To be sure, use my .config. Then run:
+To be sure, use my .config (currently from 6.3.0-rc1-gebf779db3895).  Then run:
 	
 ```	
 	make ARCH=riscv CROSS_COMPILE=riscv64-unknown-linux-gnu- -j$(nproc)
@@ -161,8 +138,7 @@ After all, this is a very low resources board and it is SLOW!
 
 
 9)  I used a Debian style initrd. Initrd is a usefull to initialize devices during boot, fsck the filesystems etc. 	In order to make one, I used a trick: 
-	I put my linux source tree inside /usr/src/ of my riscv Debian filesystem, used chroot on the root of the filsystem, recompiled the kernel natively with Debian's gcc (needed because some scripts need to be natively recompiled), 
-	and	then run make modules, make modules_install and make install - ie I installed it inside my riscv filesystem. Debian's scripts made the initrd for me. Lazy, I know, if you know mkinitrd feel free to use it instead.
+	I moved my linux source tree inside /usr/src/ of my riscv Debian chroot filesystem, run  chroot on the root of the filesystem, erased all scipts in the kernel tree (they have been compiled as x86 binaries) and recompiled the kernel natively with Debian's gcc, and	then run make install - ie I installed the kernel inside my riscv filesystem. Debian's scripts made the initrd for me. Lazy, I know, if you know how to properly use mkinitrd feel free to use it instead.
 	If unsure how to do any of these, use mine.
 
 
