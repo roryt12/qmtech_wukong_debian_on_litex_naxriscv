@@ -52,6 +52,8 @@ Also these
 ```
   riscv,isa = "rv64imafdc";
 
+Check if the "intc0" block exists, otherwise add it manually
+
 In memory I changed 
 
   reg = <0x41000000 0xF000000>;
